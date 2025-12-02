@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
+import { YoutubeProvider } from "./contexts/YoutubeContext";
 import { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -16,15 +17,16 @@ function TabsScreen() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#044981ff",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: "#32383dff",
+        tabBarInactiveTintColor: "white",
+        tabBarStyle: { backgroundColor: "rgba(124, 130, 184, 1)" },
       })}
     >
       <Tab.Screen
         name="Home"
         component={Home}
         options={{
-          title: "Główna", // Tekst pod ikonką
+          title: "Główna",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -47,7 +49,9 @@ function TabsScreen() {
 export default function App() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <YoutubeProvider>
+        <RootNavigator />
+      </YoutubeProvider>
     </AuthProvider>
   );
 }
@@ -65,8 +69,9 @@ function RootNavigator() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(124, 130, 184, 1)",
     alignItems: "center",
     justifyContent: "center",
+    fontFamily: "Poppins",
   },
 });
