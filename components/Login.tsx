@@ -12,26 +12,27 @@ import { Octicons } from "@expo/vector-icons";
 export default function Login() {
   const { guestLogin, isLoggedIn } = useContext(AuthContext);
 
-  //   useEffect(() => {
-  //     console.log("isLoggedIn changed", isLoggedIn);
-  //   }, [isLoggedIn]);
+  useEffect(() => {
+    console.log("isLoggedIn changed", isLoggedIn);
+  }, [isLoggedIn]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.section40} />
+      <View style={styles.section20} />
 
-      <View style={[styles.section20, styles.centerContent]}>
+      <View style={[styles.section10, styles.centerContent]}>
         <Text style={styles.youtube}>YouTube</Text>
         <Text style={styles.learn}>LEARN</Text>
       </View>
-
+      <View style={styles.section20} />
       <View style={[styles.section40, styles.centerContent]}>
-        <Octicons name="video" size={100} color="#32383dff" padding="100" />
+        <Octicons name="video" size={100} color="#32383dff" />
+      </View>
+      <View style={styles.section20}>
         <Text style={styles.welcomeText}>
           Welcome to the best YouTube-based learning application.
         </Text>
       </View>
-
       <View style={[styles.section20, styles.centerContent]}>
         <TouchableOpacity
           style={styles.buttonContainer}
@@ -41,7 +42,7 @@ export default function Login() {
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.section20, styles.centerContent]}>
+      <View style={[styles.section10, styles.centerContent]}>
         <Text style={styles.policyText}>
           By continuing you agree with{" "}
           <Text
@@ -68,13 +69,15 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#65859eff",
+    backgroundColor: "rgba(124, 130, 184, 1)",
     paddingHorizontal: "10%",
   },
+
   centerContent: {
     alignItems: "center",
     justifyContent: "center",
   },
+
   section10: {
     flex: 1,
   },
@@ -84,6 +87,7 @@ const styles = StyleSheet.create({
   section40: {
     flex: 4,
   },
+
   youtube: {
     fontSize: 48,
     paddingRight: 20,
@@ -102,6 +106,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: "white",
   },
+
   buttonContainer: {
     backgroundColor: "#32383dff",
     paddingHorizontal: 30,
@@ -115,6 +120,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
   },
+
   policyText: {
     fontSize: 12,
     color: "white",
