@@ -1,90 +1,87 @@
-import React, { useContext, useState } from "react";
-import { StyleSheet, Text, View, TextInput, Button } from "react-native";
+import React, { useContext, useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { YoutubeContext } from "../contexts/YoutubeContext";
+import VideoRow from "./VideoRow";
 
-type YoutubeVideoItem = {
-  id: {
-    kind: string;
-    videoId: string;
-  };
-  snippet: {
-    publishedAt: string;
-    channelId: string;
-    title: string;
-    description: string;
-    channelTitle: string;
-    thumbnails?: {
-      default: { url: string };
-      medium: { url: string };
-      high: { url: string };
-    };
-  };
-};
+const CATEGORIES_TO_DISPLAY = ["REACT-NATIVE", "REACT", "TYPESCRIPT"];
 
 export default function Home() {
-  const { videos, loading, error, fetchVideos } = useContext(YoutubeContext);
-  const [searchText, setSearchText] = useState("");
+  const { categorizedVideos, isCacheLoading, fetchCategorizedVideos, error } =
+    useContext(YoutubeContext);
 
-  const handleSearch = () => {
-    if (searchText.trim() !== "") {
-      fetchVideos({ query: searchText });
-    }
-  };
+  useEffect(() => {
+    fetchCategorizedVideos();
+  }, []);
 
-  console.log("videos in Home:", videos);
+  if (isCacheLoading) {
+    return <Text>Loading categories...</Text>;
+  }
+
+  console.log("categorizedVideos:", categorizedVideos);
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="React Native"
-        placeholderTextColor="#999"
-        value={searchText}
-        onChangeText={setSearchText}
-        onSubmitEditing={handleSearch}
-      />
-      <Button title="Search" onPress={handleSearch} color="#FF0000" />
+    <ScrollView style={styles.container}>
+      <Text style={styles.mainHeader}>Courses</Text>
+      {categorizedVideos &&
+        CATEGORIES_TO_DISPLAY.map((categoryKey) => {
+          const videos = categorizedVideos[categoryKey] || [];
 
-      {loading && <Text>Loading...</Text>}
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      {videos && videos.length > 0
-        ? videos.map((video: YoutubeVideoItem) => (
-            <View key={video.id.videoId} style={styles.videoItem}>
-              <Text style={styles.videoTitle}>{video.snippet.title}</Text>
-            </View>
-          ))
-        : !loading && <Text>No videos found.</Text>}
-    </View>
+          return (
+            <VideoRow
+              key={categoryKey}
+              title={categoryKey.replace("-", " ")} 
+              videos={videos}
+            />
+          );
+        })}
+      {!categorizedVideos && !error && (
+        <Text style={styles.noDataText}>
+          No data
+        </Text>
+      )}
+      <View style={{ height: 50 }} /> 
+    </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    paddingTop: 40,
+    backgroundColor: "#f9f9f9",
+  },
+  centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  input: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    width: "80%",
-    color: "#000",
-  },
-  videoItem: {
-    marginVertical: 10,
-    padding: 10,
-    borderBottomColor: "#ccc",
+  mainHeader: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginLeft: 15,
+    marginBottom: 15,
     borderBottomWidth: 1,
-    width: "100%",
+    borderBottomColor: "#eee",
+    paddingBottom: 10,
   },
   errorText: {
     color: "red",
-  },
-  videoTitle: {
-    fontSize: 16,
     fontWeight: "bold",
+    marginBottom: 10,
+  },
+  retryButton: {
+    color: "blue",
+    textDecorationLine: "underline",
+  },
+  noDataText: {
+    textAlign: "center",
+    marginTop: 50,
+    color: "#aaa",
   },
 });
