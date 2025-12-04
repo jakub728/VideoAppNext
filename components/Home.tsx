@@ -1,13 +1,8 @@
 import React, { useContext, useState, useEffect } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { StyleSheet, Text, View, ScrollView, Modal } from "react-native";
 import { YoutubeContext } from "../contexts/YoutubeContext";
 import VideoRow from "./VideoRow";
+import Video from "./Video";
 
 const CATEGORIES_TO_DISPLAY = ["REACT-NATIVE", "REACT", "TYPESCRIPT"];
 
@@ -35,17 +30,16 @@ export default function Home() {
           return (
             <VideoRow
               key={categoryKey}
-              title={categoryKey.replace("-", " ")} 
+              title={categoryKey.replace("-", " ")}
               videos={videos}
             />
           );
         })}
+      <Text>Local video</Text>
       {!categorizedVideos && !error && (
-        <Text style={styles.noDataText}>
-          No data
-        </Text>
+        <Text style={styles.noDataText}>No data</Text>
       )}
-      <View style={{ height: 50 }} /> 
+      <View style={{ height: 50 }} />
     </ScrollView>
   );
 }
