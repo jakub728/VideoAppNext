@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -6,19 +6,12 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
+import { YoutubeContext, VideoItem } from "../contexts/YoutubeContext";
 
 const CARD_WIDTH = 180;
 const SCREEN_WIDTH = Dimensions.get("window").width;
-
-type VideoItem = {
-  id: { videoId: string };
-  snippet: {
-    title: string;
-    thumbnails?: { high?: { url: string } };
-    channelTitle: string;
-  };
-};
 
 type VideoCategoryRowProps = {
   title: string;
@@ -26,11 +19,12 @@ type VideoCategoryRowProps = {
 };
 
 export default function VideoRow({ title, videos }: VideoCategoryRowProps) {
+  const { handleVideoPress } = useContext(YoutubeContext);
   if (!videos || videos.length === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.noVideosText}>Brak filmów do wyświetlenia.</Text>
+        <Text style={styles.noVideosText}>No videos to show</Text>
       </View>
     );
   }
@@ -44,7 +38,11 @@ export default function VideoRow({ title, videos }: VideoCategoryRowProps) {
         contentContainerStyle={styles.scrollViewContent}
       >
         {videos.map((video) => (
-          <View key={video.id.videoId} style={styles.card}>
+          <TouchableOpacity
+            key={video.id.videoId}
+            style={styles.card}
+            onPress={() => handleVideoPress(video)}
+          >
             <Image
               source={{ uri: video.snippet.thumbnails?.high?.url }}
               style={styles.thumbnail}
@@ -55,7 +53,7 @@ export default function VideoRow({ title, videos }: VideoCategoryRowProps) {
             <Text style={styles.channelTitle} numberOfLines={1}>
               {video.snippet.channelTitle}
             </Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>

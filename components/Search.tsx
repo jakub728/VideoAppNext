@@ -4,47 +4,31 @@ import {
   Text,
   View,
   TextInput,
-  Image,
   ScrollView,
   Animated,
   Easing,
-  Alert,
   Modal,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { YoutubeContext } from "../contexts/YoutubeContext";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Video from "./Video";
 
-type YoutubeVideoItem = {
-  id: {
-    kind: string;
-    videoId: string;
-  };
-  snippet: {
-    publishedAt: string;
-    channelId: string;
-    title: string;
-    description: string;
-    channelTitle: string;
-    thumbnails?: {
-      default: { url: string };
-      medium: { url: string };
-      high: { url: string };
-    };
-  };
-};
-
 export default function Search() {
-  const { videos, loading, error, fetchVideos } = useContext(YoutubeContext);
+  const {
+    videos,
+    loading,
+    error,
+    fetchVideos,
+    isVideoModalVisible,
+    selectedVideo,
+    handleVideoPress,
+    closeVideoModal,
+  } = useContext(YoutubeContext);
   const [searchText, setSearchText] = useState("");
   const [sort, setSort] = useState("relevance");
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
-  const [isVideoModalVisible, setIsVideoModalVisible] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState<{
-    videoId: string;
-    title: string;
-  } | null>(null);
 
   //1 scroll
   const scrollViewRef = useRef<ScrollView>(null);
@@ -93,14 +77,9 @@ export default function Search() {
     setIsSortModalVisible(true);
   };
 
-  //4 wideo
-  const handleVideoPress = (video: YoutubeVideoItem) => {
-    setSelectedVideo({
-      videoId: video.id.videoId,
-      title: video.snippet.title,
-    });
-    setIsVideoModalVisible(true);
-  };
+  useEffect(() => {
+    fetchVideos();
+  }, []);
 
   console.log("videos from YoutubeContext:", videos);
 
@@ -132,6 +111,7 @@ export default function Search() {
         </Text>
       </View>
 
+      {/* SORT BY MODAL */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -194,24 +174,28 @@ export default function Search() {
           </View>
         </View>
       </Modal>
+
+      {/* YOUTUBE VIDEO MODAL */}
       <Modal
         animationType="slide"
         transparent={false}
         visible={isVideoModalVisible}
-        onRequestClose={() => setIsVideoModalVisible(false)}
+        onRequestClose={closeVideoModal}
       >
         {selectedVideo && (
-          <Video videoId={selectedVideo.videoId} title={selectedVideo.title} />
+          <Video
+            videoId={selectedVideo.videoId}
+            title={selectedVideo.title}
+            channelTitle={selectedVideo.channelTitle}
+            description={selectedVideo.description}
+            publishedAt={selectedVideo.publishedAt}
+            viewCount={selectedVideo.viewCount}
+            likeCount={selectedVideo.likeCount}
+            commentCount={selectedVideo.commentCount}
+          />
         )}
-
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => {
-            setIsVideoModalVisible(false);
-            setSelectedVideo(null);
-          }}
-        >
-          <Text style={styles.closeButtonText}>Zamknij</Text>
+        <TouchableOpacity style={styles.closeButton} onPress={closeVideoModal}>
+          <Text style={styles.closeButtonText}>Back</Text>
         </TouchableOpacity>
       </Modal>
 
@@ -224,13 +208,12 @@ export default function Search() {
         />
       )}
       {error && <Text style={styles.errorText}>{error}</Text>}
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
       >
         {videos && videos.length > 0 && !loading
-          ? (videos as YoutubeVideoItem[]).map((video: YoutubeVideoItem) => (
+          ? (videos as any[]).map((video: any) => (
               <TouchableOpacity
                 key={video.id.videoId}
                 style={styles.videoItem}
@@ -377,8 +360,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    bottom: 20,
+    left: 20,
     backgroundColor: "rgba(200, 200, 200, 0.7)",
     padding: 10,
     borderRadius: 20,
