@@ -1,5 +1,4 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { AuthProvider, AuthContext } from "./contexts/AuthContext";
 import { YoutubeProvider } from "./contexts/YoutubeContext";
 import { useContext } from "react";
@@ -15,7 +14,7 @@ const Tab = createBottomTabNavigator();
 function TabsScreen() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={() => ({
         headerShown: false,
         tabBarActiveTintColor: "#32383dff",
         tabBarInactiveTintColor: "white",
@@ -26,7 +25,7 @@ function TabsScreen() {
         name="Home"
         component={Home}
         options={{
-          title: "Główna",
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -36,7 +35,7 @@ function TabsScreen() {
         name="Search"
         component={Search}
         options={{
-          title: "Szukaj",
+          title: "Search",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
           ),

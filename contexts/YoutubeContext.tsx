@@ -31,7 +31,6 @@ export interface VideoItem {
     likeCount: string;
     commentCount: string;
   };
-  
 }
 
 interface SelectedVideoType {
@@ -43,6 +42,8 @@ interface SelectedVideoType {
   viewCount?: string;
   likeCount?: string;
   commentCount?: string;
+
+  localSource?: string;
 }
 
 type CategorizedVideos = {
@@ -74,6 +75,8 @@ interface YoutubeContextType {
   selectedVideo: SelectedVideoType | null;
   handleVideoPress: (video: VideoItem) => void;
   closeVideoModal: () => void;
+
+  handleLocalVideoPress: () => void;
 }
 
 export const YoutubeContext = createContext<YoutubeContextType>({
@@ -90,6 +93,7 @@ export const YoutubeContext = createContext<YoutubeContextType>({
   selectedVideo: null,
   handleVideoPress: () => {},
   closeVideoModal: () => {},
+  handleLocalVideoPress: () => {},
 });
 
 async function fetchStatisticsForVideos(
@@ -184,6 +188,26 @@ export const YoutubeProvider: FC<YoutubeProviderProps> = ({ children }) => {
       likeCount: video.statistics?.likeCount,
       commentCount: video.statistics?.commentCount,
     });
+    console.log(selectedVideo);
+
+    setIsVideoModalVisible(true);
+  };
+
+  // Open local video Modal
+  const handleLocalVideoPress = () => {
+    const localVideoData: SelectedVideoType = {
+      localSource: require("../assets/broadchurch.mp4"),
+      title: "Broadchurch",
+      channelTitle: "Local Movies",
+      publishedAt: new Date().toISOString(),
+      description: "Desciption",
+      viewCount: "9.5k",
+      likeCount: "1.2k",
+      commentCount: "150",
+      videoId: "",
+    };
+
+    setSelectedVideo(localVideoData);
     setIsVideoModalVisible(true);
   };
 
@@ -280,9 +304,11 @@ export const YoutubeProvider: FC<YoutubeProviderProps> = ({ children }) => {
     const {
       query = "React Native", //wyszukiwanie
       maxResults = 10, // liczba wynikow
-      order = "relevance", // sortowanie ('date', 'viewCount', 'relevance', "oldest")
+      order: requestedOrder = "relevance", // sortowanie ('date', 'viewCount', 'relevance', "oldest")
       channelId = "", // ID kanału
     } = options;
+
+    const apiOrder = requestedOrder === "oldest" ? "date" : requestedOrder;
 
     if (!API_KEY || !BASE_URL) {
       setError("No API key or BASE_URL BASE URL");
@@ -294,7 +320,7 @@ export const YoutubeProvider: FC<YoutubeProviderProps> = ({ children }) => {
 
     const url = `${BASE_URL}?part=snippet&q=${encodeURIComponent(
       query
-    )}&type=video&maxResults=${maxResults}&order=${order}&key=${API_KEY}`;
+    )}&type=video&maxResults=${maxResults}&order=${apiOrder}&key=${API_KEY}`;
 
     try {
       const response = await fetch(url);
@@ -308,6 +334,10 @@ export const YoutubeProvider: FC<YoutubeProviderProps> = ({ children }) => {
 
       const data = await response.json();
       let searchResults = (data.items as VideoItem[]) || [];
+
+      if (requestedOrder === "oldest") {
+        searchResults = searchResults.reverse();
+      }
 
       const videoIds = searchResults
         .map((item) => item.id.videoId)
@@ -346,6 +376,7 @@ export const YoutubeProvider: FC<YoutubeProviderProps> = ({ children }) => {
       selectedVideo,
       handleVideoPress,
       closeVideoModal,
+      handleLocalVideoPress,
     }),
     [
       videos,
@@ -359,6 +390,7 @@ export const YoutubeProvider: FC<YoutubeProviderProps> = ({ children }) => {
       selectedVideo,
       handleVideoPress,
       closeVideoModal,
+      handleLocalVideoPress,
     ]
   );
 

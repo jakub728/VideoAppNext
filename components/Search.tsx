@@ -14,7 +14,7 @@ import {
 import { YoutubeContext } from "../contexts/YoutubeContext";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Video from "./Video";
-
+import VideoLocal from "./VideoLocal";
 export default function Search() {
   const {
     videos,
@@ -175,25 +175,44 @@ export default function Search() {
         </View>
       </Modal>
 
-      {/* YOUTUBE VIDEO MODAL */}
+      {/* YOUTUBE AND LOCAL VIDEO MODAL */}
       <Modal
         animationType="slide"
         transparent={false}
         visible={isVideoModalVisible}
         onRequestClose={closeVideoModal}
       >
-        {selectedVideo && (
-          <Video
-            videoId={selectedVideo.videoId}
-            title={selectedVideo.title}
-            channelTitle={selectedVideo.channelTitle}
-            description={selectedVideo.description}
-            publishedAt={selectedVideo.publishedAt}
-            viewCount={selectedVideo.viewCount}
-            likeCount={selectedVideo.likeCount}
-            commentCount={selectedVideo.commentCount}
-          />
-        )}
+        {selectedVideo ? (
+          selectedVideo.localSource ? (
+            <VideoLocal
+              localSource={selectedVideo.localSource}
+              title={selectedVideo.title}
+              channelTitle={selectedVideo.channelTitle}
+              description={selectedVideo.description}
+              publishedAt={selectedVideo.publishedAt}
+              viewCount={selectedVideo.viewCount}
+              likeCount={selectedVideo.likeCount}
+              commentCount={selectedVideo.commentCount}
+            />
+          ) : selectedVideo.videoId ? (
+            <Video
+              videoId={selectedVideo.videoId}
+              title={selectedVideo.title}
+              channelTitle={selectedVideo.channelTitle}
+              description={selectedVideo.description}
+              publishedAt={selectedVideo.publishedAt}
+              viewCount={selectedVideo.viewCount}
+              likeCount={selectedVideo.likeCount}
+              commentCount={selectedVideo.commentCount}
+            />
+          ) : (
+            <View style={styles.centerContainer}>
+              <Text style={styles.errorText}>
+                Błąd: Nie można załadować wideo (brak ID/Źródła).
+              </Text>
+            </View>
+          )
+        ) : null}
         <TouchableOpacity style={styles.closeButton} onPress={closeVideoModal}>
           <Text style={styles.closeButtonText}>Back</Text>
         </TouchableOpacity>
@@ -247,6 +266,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   input: {
     height: 40,

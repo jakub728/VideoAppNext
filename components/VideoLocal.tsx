@@ -1,45 +1,41 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState } from "react";
 import {
-  View,
   StyleSheet,
-  Alert,
-  Dimensions,
   Text,
-  Button,
+  View,
+  ScrollView,
+  Dimensions,
+  Modal,
 } from "react-native";
-import YoutubePlayer from "react-native-youtube-iframe";
+import Video from "react-native-video";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-const { width } = Dimensions.get("window");
-const PLAYER_HEIGHT = width * 0.5625;
+const PLAYER_HEIGHT = Dimensions.get("window").width * (9 / 16);
 
-type VideoPlayerProps = {
-  videoId: string;
+interface VideoLocalProps {
+  localSource: string;
   title: string;
   channelTitle: string;
   description: string;
-  publishedAt: string;
-  viewCount: string | undefined;
-  likeCount: string | undefined;
-  commentCount: string | undefined;
-};
+  viewCount?: string;
+  likeCount?: string;
+  publishedAt?: string;
+  commentCount?: string;
+  notes?: string;
+}
 
-export default function Video({
-  videoId,
+export default function VideoLocal({
+  localSource,
   title,
   channelTitle,
   description,
-  likeCount,
   viewCount,
-  commentCount,
-}: VideoPlayerProps) {
-  const [playing, setPlaying] = useState<boolean>(false);
-  const [isDetails, setIsDetails] = useState<boolean>(true);
-  const playerRef = useRef<InstanceType<typeof YoutubePlayer> | null>(null);
-
+  likeCount,
+  publishedAt,
+}: VideoLocalProps) {
+  const [isDetails, setIsDetails] = useState(true);
   const activeDetailStyle = isDetails ? styles.tabActive : styles.tabInactive;
   const activeNotesStyle = !isDetails ? styles.tabActive : styles.tabInactive;
-
   const detailTextStyle = isDetails
     ? styles.tabTextActive
     : styles.tabTextInactive;
@@ -47,47 +43,14 @@ export default function Video({
     ? styles.tabTextActive
     : styles.tabTextInactive;
 
-  const onStateChange = useCallback((state: string) => {
-    if (state === "ended") {
-      setPlaying(false);
-      Alert.alert("End");
-    }
-    if (state === "cued") {
-    }
-  }, []);
-
-  if (!videoId) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error no videoId</Text>
-      </View>
-    );
-  }
-
-  // number formatter
-  const formatViews = (value?: string): string => {
-    if (!value) return "0";
-    const newNumber = Number(value) || 0;
-
-    const formatter = new Intl.NumberFormat("en-US", {
-      notation: "compact",
-      maximumFractionDigits: 1,
-    });
-
-    const formattedString = formatter.format(newNumber);
-    return formattedString;
-  };
-  // niepotrzebne :(((
-
   return (
-    <View style={styles.container}>
-      <YoutubePlayer
-        ref={playerRef}
-        height={PLAYER_HEIGHT}
-        play={playing}
-        videoId={videoId}
-        onChangeState={onStateChange}
-        webViewStyle={styles.webView}
+    <ScrollView style={styles.container}>
+      <Video
+        source={{ uri: localSource }}
+        style={{ width: "100%", height: PLAYER_HEIGHT, position: "static" }}
+        controls={true}
+        resizeMode="contain"
+        paused={false}
       />
 
       <Text style={styles.videoTitle} numberOfLines={2}>
@@ -100,7 +63,7 @@ export default function Video({
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            gap: "10",
+            gap: 10,
           }}
         >
           <Ionicons
@@ -138,52 +101,54 @@ export default function Video({
           <>
             <Text style={{ fontWeight: "bold" }}>Description</Text>
             <Text style={styles.descriptionText}>{description}</Text>
+
+            <View style={styles.subcontainer3}>
+              <Text style={{ fontWeight: "bold", marginLeft: 30 }}>
+                Statistic
+              </Text>
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginTop: 20,
+                  marginBottom: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    marginLeft: 30,
+                    padding: 10,
+                    width: "30%",
+                    textAlign: "center",
+                    backgroundColor: "rgba(55, 61, 114, 1)",
+                    color: "white",
+                    borderRadius: 15,
+                  }}
+                >
+                  {viewCount} views
+                </Text>
+                <Text
+                  style={{
+                    marginRight: 30,
+                    padding: 10,
+                    width: "30%",
+                    textAlign: "center",
+                    backgroundColor: "rgba(55, 61, 114, 1)",
+                    color: "white",
+                    borderRadius: 15,
+                  }}
+                >
+                  {likeCount} likes
+                </Text>
+              </View>
+            </View>
           </>
         ) : (
           <Text style={{ fontWeight: "bold" }}>Notes</Text>
         )}
       </View>
-      {isDetails && (
-        <View style={styles.subcontainer3}>
-          <Text style={{ fontWeight: "bold", marginLeft: 30 }}>Statistic</Text>
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: 20,
-            }}
-          >
-            <Text
-              style={{
-                marginLeft: 30,
-                padding: 10,
-                width: "30%",
-                textAlign: "center",
-                backgroundColor: "rgba(55, 61, 114, 1)",
-                color: "white",
-                borderRadius: 15,
-              }}
-            >
-              {viewCount} views
-            </Text>
-            <Text
-              style={{
-                marginRight: 30,
-                padding: 10,
-                width: "30%",
-                textAlign: "center",
-                backgroundColor: "rgba(55, 61, 114, 1)",
-                color: "white",
-                borderRadius: 15,
-              }}
-            >
-              {likeCount} likes
-            </Text>
-          </View>
-        </View>
-      )}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -253,12 +218,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: "#333",
     marginVertical: 30,
-  },
-  webView: {
-    opacity: 0.99,
-  },
-  errorText: {
-    padding: 20,
-    color: "red",
   },
 });
