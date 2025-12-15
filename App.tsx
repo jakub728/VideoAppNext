@@ -8,8 +8,10 @@ import Login from "./components/Login";
 import Home from "./components/Home";
 import Search from "./components/Search";
 import { Ionicons } from "@expo/vector-icons";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const Tab = createBottomTabNavigator();
+const queryClient = new QueryClient();
 
 function TabsScreen() {
   return (
@@ -22,7 +24,7 @@ function TabsScreen() {
       })}
     >
       <Tab.Screen
-        name="Home"
+        name="index"
         component={Home}
         options={{
           title: "Home",
@@ -47,11 +49,13 @@ function TabsScreen() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <YoutubeProvider>
-        <RootNavigator />
-      </YoutubeProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <YoutubeProvider>
+          <RootNavigator />
+        </YoutubeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

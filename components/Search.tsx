@@ -14,29 +14,33 @@ import {
 import { YoutubeContext } from "../contexts/YoutubeContext";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Video from "./Video";
-import VideoLocal from "./VideoLocal";
+
 export default function Search() {
   const {
     videos,
-    loading,
+    isLoading,
     error,
-    fetchVideos,
+    refetchCategorizedVideos,
     isVideoModalVisible,
     selectedVideo,
     handleVideoPress,
     closeVideoModal,
   } = useContext(YoutubeContext);
+
   const [searchText, setSearchText] = useState("");
-  const [sort, setSort] = useState("relevance");
+  const [sort, setSort] = useState<
+    "relevance" | "date" | "viewCount" | "oldest"
+  >("relevance");
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
 
-  //1 scroll
   const scrollViewRef = useRef<ScrollView>(null);
+
   const handleSearch = () => {
     if (searchText.trim() !== "") {
-      fetchVideos({ query: searchText });
+      refetchCategorizedVideos({ query: searchText, order: sort });
     }
   };
+
   useEffect(() => {
     if (videos && videos.length > 0) {
       if (scrollViewRef.current) {
@@ -45,7 +49,6 @@ export default function Search() {
     }
   }, [videos]);
 
-  //2 spinner
   const spinValue = useRef(new Animated.Value(0)).current;
   const spin = () => {
     spinValue.setValue(0);
@@ -55,33 +58,28 @@ export default function Search() {
         duration: 1000,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     ).start();
   };
+
   useEffect(() => {
-    if (loading) {
+    if (isLoading) {
       spin();
     } else {
       spinValue.stopAnimation();
       spinValue.setValue(0);
     }
-  }, [loading]);
+  }, [isLoading]);
+
   const spinInterpolate = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
   });
   const AnimatedIcon = Animated.createAnimatedComponent(EvilIcons);
 
-  //3 sortowanie
   const handleSort = () => {
     setIsSortModalVisible(true);
   };
-
-  useEffect(() => {
-    fetchVideos();
-  }, []);
-
-  console.log("videos from YoutubeContext:", videos);
 
   return (
     <View style={styles.container}>
@@ -94,21 +92,23 @@ export default function Search() {
         onSubmitEditing={handleSearch}
       />
       <View style={styles.sort}>
-        <Text onPress={handleSort}>Sort by: </Text>
-        <Text>
-          {(() => {
-            switch (sort) {
-              case "date":
-                return "latest";
-              case "oldest":
-                return "oldest";
-              case "viewCount":
-                return "most popular";
-              default:
-                return "relevance";
-            }
-          })()}
-        </Text>
+        <TouchableOpacity style={{ flexDirection: "row" }} onPress={handleSort}>
+          <Text>Sort by: </Text>
+          <Text style={{ fontWeight: "bold", color: "blue" }}>
+            {(() => {
+              switch (sort) {
+                case "date":
+                  return "latest";
+                case "oldest":
+                  return "oldest";
+                case "viewCount":
+                  return "most popular";
+                default:
+                  return "relevance";
+              }
+            })()}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* SORT BY MODAL */}
@@ -125,7 +125,7 @@ export default function Search() {
               style={styles.sortOptionButton}
               onPress={() => {
                 setSort("date");
-                fetchVideos({ query: searchText, order: "date" });
+                refetchCategorizedVideos({ query: searchText, order: "date" });
                 setIsSortModalVisible(false);
               }}
             >
@@ -136,7 +136,10 @@ export default function Search() {
               style={styles.sortOptionButton}
               onPress={() => {
                 setSort("oldest");
-                fetchVideos({ query: searchText, order: "oldest" });
+                refetchCategorizedVideos({
+                  query: searchText,
+                  order: "oldest",
+                });
                 setIsSortModalVisible(false);
               }}
             >
@@ -147,7 +150,10 @@ export default function Search() {
               style={styles.sortOptionButton}
               onPress={() => {
                 setSort("viewCount");
-                fetchVideos({ query: searchText, order: "viewCount" });
+                refetchCategorizedVideos({
+                  query: searchText,
+                  order: "viewCount",
+                });
                 setIsSortModalVisible(false);
               }}
             >
@@ -158,7 +164,10 @@ export default function Search() {
               style={styles.sortOptionButton}
               onPress={() => {
                 setSort("relevance");
-                fetchVideos({ query: searchText, order: "relevance" });
+                refetchCategorizedVideos({
+                  query: searchText,
+                  order: "relevance",
+                });
                 setIsSortModalVisible(false);
               }}
             >
@@ -175,63 +184,49 @@ export default function Search() {
         </View>
       </Modal>
 
-      {/* YOUTUBE AND LOCAL VIDEO MODAL */}
+      {/* YOUTUBE VIDEO MODAL */}
       <Modal
         animationType="slide"
         transparent={false}
         visible={isVideoModalVisible}
         onRequestClose={closeVideoModal}
       >
-        {selectedVideo ? (
-          selectedVideo.localSource ? (
-            <VideoLocal
-              localSource={selectedVideo.localSource}
-              title={selectedVideo.title}
-              channelTitle={selectedVideo.channelTitle}
-              description={selectedVideo.description}
-              publishedAt={selectedVideo.publishedAt}
-              viewCount={selectedVideo.viewCount}
-              likeCount={selectedVideo.likeCount}
-              commentCount={selectedVideo.commentCount}
-            />
-          ) : selectedVideo.videoId ? (
-            <Video
-              videoId={selectedVideo.videoId}
-              title={selectedVideo.title}
-              channelTitle={selectedVideo.channelTitle}
-              description={selectedVideo.description}
-              publishedAt={selectedVideo.publishedAt}
-              viewCount={selectedVideo.viewCount}
-              likeCount={selectedVideo.likeCount}
-              commentCount={selectedVideo.commentCount}
-            />
-          ) : (
-            <View style={styles.centerContainer}>
-              <Text style={styles.errorText}>
-                Błąd: Nie można załadować wideo (brak ID/Źródła).
-              </Text>
-            </View>
-          )
-        ) : null}
+        {selectedVideo && (
+          <Video
+            videoId={selectedVideo.videoId}
+            title={selectedVideo.title}
+            channelTitle={selectedVideo.channelTitle}
+            description={selectedVideo.description}
+            publishedAt={selectedVideo.publishedAt}
+            viewCount={selectedVideo.viewCount}
+            likeCount={selectedVideo.likeCount}
+            commentCount={selectedVideo.commentCount}
+          />
+        )}
+
         <TouchableOpacity style={styles.closeButton} onPress={closeVideoModal}>
           <Text style={styles.closeButtonText}>Back</Text>
         </TouchableOpacity>
       </Modal>
 
-      {loading && (
-        <AnimatedIcon
-          name="spinner"
-          size={54}
-          color="black"
-          style={{ transform: [{ rotate: spinInterpolate }] }}
-        />
+      {isLoading && (
+        <View style={{ alignItems: "center", marginVertical: 10 }}>
+          <AnimatedIcon
+            name="spinner"
+            size={54}
+            color="black"
+            style={{ transform: [{ rotate: spinInterpolate }] }}
+          />
+        </View>
       )}
       {error && <Text style={styles.errorText}>{error}</Text>}
+
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
       >
-        {videos && videos.length > 0 && !loading
+        {videos && videos.length > 0 && !isLoading
           ? (videos as any[]).map((video: any) => (
               <TouchableOpacity
                 key={video.id.videoId}
@@ -253,8 +248,12 @@ export default function Search() {
                 <Text style={styles.videoTitle}>{video.snippet.title}</Text>
               </TouchableOpacity>
             ))
-          : !loading && (
-              <Text style={{ textAlign: "center" }}>Search videos</Text>
+          : !isLoading && (
+              <Text
+                style={{ textAlign: "center", marginTop: 40, color: "#999" }}
+              >
+                Search videos
+              </Text>
             )}
       </ScrollView>
     </View>

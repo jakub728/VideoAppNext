@@ -3,6 +3,8 @@
 **VideoAppNext** is a modern video application built with **TypeScript** and **React-based technology** (React / Next.js / React Native).
 The project is structured in a modular way, making it easy to scale, maintain, and extend with new features related to video playback and management.
 
+App is made in React Native for Android and iOS.
+
 ---
 
 ## 🚀 Features

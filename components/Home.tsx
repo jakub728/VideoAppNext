@@ -1,17 +1,16 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Modal,
 } from "react-native";
-import Video from "react-native-video";
-
+import Video from "./Video";
 import { YoutubeContext } from "../contexts/YoutubeContext";
 import VideoRow from "./VideoRow";
-
-import localVideoSource from "../assets/broadchurch.mp4";
 
 const CATEGORIES_TO_DISPLAY = ["REACT-NATIVE", "REACT", "TYPESCRIPT"];
 const CARD_WIDTH = 180;
@@ -19,21 +18,34 @@ const CARD_WIDTH = 180;
 export default function Home() {
   const {
     categorizedVideos,
-    isCacheLoading,
-    fetchCategorizedVideos,
+    isLoading,
+    refetchCategorizedVideos,
     error,
-    handleLocalVideoPress,
+    isVideoModalVisible,
+    selectedVideo,
+    closeVideoModal,
+    handleVideoPress,
   } = useContext(YoutubeContext);
 
-  useEffect(() => {
-    fetchCategorizedVideos();
-  }, []);
-
-  if (isCacheLoading) {
-    return <Text>Loading categories...</Text>;
+  if (isLoading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={{ marginTop: 10 }}>Loading categories...</Text>
+      </View>
+    );
   }
 
-  console.log("categorizedVideos:", categorizedVideos);
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+        <TouchableOpacity onPress={() => refetchCategorizedVideos()}>
+          <Text style={styles.retryButton}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -51,39 +63,32 @@ export default function Home() {
           );
         })}
 
-      {!categorizedVideos && !error && (
-        <Text style={styles.noDataText}>No data</Text>
-      )}
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "bold",
-          marginLeft: 15,
-          marginBottom: 10,
-          color: "red",
-        }}
-      >
-        LOCAL
-      </Text>
-      <TouchableOpacity
-        onPress={handleLocalVideoPress}
-        style={{ width: CARD_WIDTH, marginHorizontal: 5, marginBottom: 10 }}
-      >
-        <Video
-          source={{ uri: localVideoSource as any }}
-          style={{
-            width: CARD_WIDTH,
-            height: 100,
-            marginLeft: 10,
-            borderRadius: 8,
-            marginBottom: 20,
-          }}
-          controls={false}
-          resizeMode="contain"
-          paused={true}
-        />
-      </TouchableOpacity>
+      {!categorizedVideos && <Text style={styles.noDataText}>No data</Text>}
+
       <View style={{ height: 50 }} />
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={isVideoModalVisible}
+        onRequestClose={closeVideoModal}
+      >
+        {selectedVideo && (
+          <Video
+            videoId={selectedVideo.videoId}
+            title={selectedVideo.title}
+            channelTitle={selectedVideo.channelTitle}
+            description={selectedVideo.description}
+            publishedAt={selectedVideo.publishedAt}
+            viewCount={selectedVideo.viewCount}
+            likeCount={selectedVideo.likeCount}
+            commentCount={selectedVideo.commentCount}
+          />
+        )}
+
+        <TouchableOpacity style={styles.closeButton} onPress={closeVideoModal}>
+          <Text style={styles.closeButtonText}>Back</Text>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -121,5 +126,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 50,
     color: "#aaa",
+  },
+  closeButton: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    backgroundColor: "rgba(200, 200, 200, 0.7)",
+    padding: 10,
+    borderRadius: 20,
+    zIndex: 100,
+  },
+  closeButtonText: {
+    color: "black",
+    fontWeight: "bold",
   },
 });
