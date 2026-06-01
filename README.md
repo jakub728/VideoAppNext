@@ -115,7 +115,3 @@ yarn test
 
 If you have questions or suggestions, feel free to open an issue or contact the repository owner
 sulisz.jakub@gmail.com
-
----
-
-Happy coding! 🚀
