@@ -1,6 +1,6 @@
 # 📹 VideoAppNext
 
-**VideoAppNext** is a modern video application built with **TypeScript** and **React-based technology** (React / Next.js / React Native).
+**VideoAppNext** is a modern video application built with **TypeScript** and **React-based technology** ( React Native / Expo ).
 The project is structured in a modular way, making it easy to scale, maintain, and extend with new features related to video playback and management.
 
 App is made in React Native for Android and iOS.
@@ -11,7 +11,7 @@ App is made in React Native for Android and iOS.
 
 * 📁 Clean and modular project structure
 * ⚛️ Built with React and TypeScript
-* 🔌 Global state management using Context API
+* 🔌 Global state management using Context API / @TanStack/ReactQuerry
 * 📦 Preconfigured TypeScript and Babel setup
 * 🌍 Environment-based configuration using `.env`
 * 🎥 Ready for video-related components and logic
@@ -63,7 +63,8 @@ App is made in React Native for Android and iOS.
 3. **Environment setup**
 
    * Create a `.env` file if required
-   * Add API keys or configuration variables if needed
+   * Make account GCS: YouTube Data API v3
+   * Add API_KEY and BASE_URL to variables
 
 ---
 
